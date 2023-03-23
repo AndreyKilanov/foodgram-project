@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 
-
 User = get_user_model
 
 
@@ -49,7 +48,7 @@ class Recipe(models.Model):
     tags = models.ForeignKey(
         Tags,
         on_delete=models.CASCADE,
-        related_name='tags',
+        related_name='recipes',
         verbose_name='Теги'
     )
     cooking_time = models.IntegerField(verbose_name='Время приготовления',
@@ -82,6 +81,12 @@ class Favorite(models.Model):
         verbose_name='Избранный рецепт'
     )
 
+    class Meta:
+        verbose_name = 'Избранное'
+
+    def __str__(self) -> str:
+        return self.recipe
+
 
 class Subscribe(models.Model):
     user = models.ForeignKey(
@@ -99,18 +104,34 @@ class Subscribe(models.Model):
         verbose_name='Избранный рецепт'
     )
 
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self) -> str:
+        return f'{self.user} {self.recipe}'
+
 
 class ShopingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='subscribe',
+        related_name='shopingcart',
         verbose_name='Список покупок'
     )
+
+    class Meta:
+        verbose_name = 'Список покупок'
+
+    def __str__(self) -> str:
+        return self.recipe
 
 
 class IngredientsRecipe(models.Model):
     ingredients_id = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.IntegerField(verbose_name='Сумма')
+
+    def __str__(self) -> str:
+        return f'{self.ingredients_id} {self.recipe_id}'
