@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 
-User = get_user_model
+User = get_user_model()
 
 
 class Ingredients(models.Model):
@@ -41,9 +41,9 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор Рецепта'
     )
-    ingredients = models.ManyToManyField(Ingredients,
-                                         through='IngredientsRecipe')
-    image = models.ImageField()
+    ingredient = models.ManyToManyField(Ingredients,
+                                        through='IngredientsRecipe')
+    image = models.ImageField(verbose_name='Изображение')
     text = models.TextField(verbose_name='Описание рецепта')
     tags = models.ForeignKey(
         Tags,
@@ -51,8 +51,10 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Теги'
     )
-    cooking_time = models.IntegerField(verbose_name='Время приготовления',
-                                       validators=MinValueValidator(1))
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления',
+        validators=[MinValueValidator(1)]
+    )
     pub_date = models.DateTimeField(verbose_name='Дата публикации',
                                     auto_now_add=True)
 
@@ -60,6 +62,11 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
+
+    def get_ingredients(self):
+        return "\n".join(
+            [field_name.name for field_name in self.ingredient.all()]
+        )
 
     def __str__(self) -> str:
         return self.name
@@ -129,9 +136,9 @@ class ShopingCart(models.Model):
 
 
 class IngredientsRecipe(models.Model):
-    ingredients_id = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.IntegerField(verbose_name='Сумма')
 
     def __str__(self) -> str:
-        return f'{self.ingredients_id} {self.recipe_id}'
+        return f'{self.ingredients} {self.recipe}'
