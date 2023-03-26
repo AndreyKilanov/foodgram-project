@@ -1,19 +1,19 @@
 from django.contrib import admin
 
-from reviews.models import (Ingredients, Recipe, Tags, Favorite,
-                            Subscribe, ShopingCart)
+from recipe.models import (Ingredient, Recipe, Tag, Favorite,
+                           Subscribe, ShopingCart)
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'get_ingredients',
-                    'text', 'tags', 'cooking_time',)
-    list_filter = ('name', 'author', 'tags',)
+                    'text', 'tag', 'cooking_time',)
+    list_filter = ('name', 'author', 'tag',)
     list_max_show_all = 15
     empty_value_display = '-пусто-'
 
 
-@admin.register(Ingredients)
+@admin.register(Ingredient)
 class IngredientsAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit',)
     list_filter = ('name', 'measurement_unit',)
@@ -21,7 +21,7 @@ class IngredientsAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Tags)
+@admin.register(Tag)
 class TagsAdmin(admin.ModelAdmin):
     list_display = ('name', 'color', 'slug',)
     list_filter = ('name', 'color', 'slug',)

@@ -2,15 +2,15 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from reviews.models import (Ingredients, Recipe, Tags, Favorite,
-                            Subscribe, ShopingCart)
+from recipe.models import (Ingredient, Recipe, Tag, Favorite,
+                           Subscribe, ShopingCart)
 
 User = get_user_model()
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = ('name', 'measurement_unit')
 
 
@@ -21,7 +21,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tags
+        model = Tag
         fields = ('name', 'color', 'slug')
 
 

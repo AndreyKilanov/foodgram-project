@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 User = get_user_model()
 
 
-class Ingredients(models.Model):
+class Ingredient(models.Model):
     name = models.CharField(max_length=200,
                             verbose_name='Название ингредиента')
     measurement_unit = models.CharField(max_length=200,
@@ -19,7 +19,7 @@ class Ingredients(models.Model):
         return self.name
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название тега')
     color = models.CharField(max_length=7, verbose_name='Цвет')
     slug = models.SlugField(max_length=200, unique=True,
@@ -41,12 +41,12 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор Рецепта'
     )
-    ingredient = models.ManyToManyField(Ingredients,
-                                        through='IngredientsRecipe')
+    ingredient = models.ManyToManyField(Ingredient,
+                                        through='IngredientRecipe')
     image = models.ImageField(verbose_name='Изображение')
     text = models.TextField(verbose_name='Описание рецепта')
-    tags = models.ForeignKey(
-        Tags,
+    tag = models.ForeignKey(
+        Tag,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Теги'
@@ -90,9 +90,10 @@ class Favorite(models.Model):
 
     class Meta:
         verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
 
     def __str__(self) -> str:
-        return self.recipe
+        return self.user
 
 
 class Subscribe(models.Model):
@@ -108,7 +109,7 @@ class Subscribe(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='subscribe',
-        verbose_name='Избранный рецепт'
+        verbose_name='Рецепты автора'
     )
 
     class Meta:
@@ -122,23 +123,23 @@ class Subscribe(models.Model):
 class ShopingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
         related_name='shopingcart',
         verbose_name='Список покупок'
     )
 
     class Meta:
         verbose_name = 'Список покупок'
+        verbose_name_plural = 'Список покупок'
 
     def __str__(self) -> str:
         return self.recipe
 
 
-class IngredientsRecipe(models.Model):
-    ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
+class IngredientRecipe(models.Model):
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.IntegerField(verbose_name='Сумма')
 
     def __str__(self) -> str:
-        return f'{self.ingredients} {self.recipe}'
+        return f'{self.ingredient} {self.amount}'
