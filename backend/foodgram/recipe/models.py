@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 
+
 User = get_user_model()
 
 
@@ -20,8 +21,9 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Название тега')
-    color = models.CharField(max_length=7, verbose_name='Цвет')
+    name = models.CharField(max_length=200, unique=True,
+                            verbose_name='Название тега')
+    color = models.CharField(max_length=7, unique=True, verbose_name='Цвет')
     slug = models.SlugField(max_length=200, unique=True,
                             verbose_name='Уникальный адрес')
 
@@ -39,20 +41,21 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
-        verbose_name='Автор Рецепта'
+        verbose_name='Автор рецепта'
     )
-    ingredient = models.ManyToManyField(Ingredient,
-                                        through='IngredientRecipe')
+    ingredients = models.ManyToManyField(Ingredient,
+                                         through='IngredientRecipe',
+                                         related_name='recipes')
     image = models.ImageField(verbose_name='Изображение')
     text = models.TextField(verbose_name='Описание рецепта')
-    tag = models.ForeignKey(
+    tags = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления',
+        verbose_name='Время приготовления,  в минутах',
         validators=[MinValueValidator(1)]
     )
     pub_date = models.DateTimeField(verbose_name='Дата публикации',
@@ -63,10 +66,8 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
 
-    def get_ingredients(self):
-        return "\n".join(
-            [field_name.name for field_name in self.ingredient.all()]
-        )
+    def get_ingredient(self):
+        return "\n".join([f_name.name for f_name in self.ingredients.all()])
 
     def __str__(self) -> str:
         return self.name
@@ -80,7 +81,7 @@ class Favorite(models.Model):
         related_name='favorite',
         verbose_name='Избранный автор'
     )
-    recipe = models.ForeignKey(
+    recipes = models.ForeignKey(
         Recipe,
         on_delete=models.SET_NULL,
         null=True,
@@ -92,8 +93,8 @@ class Favorite(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
-    def __str__(self) -> str:
-        return self.user
+    # def __str__(self) -> str:
+    #     return self.user
 
 
 class Subscribe(models.Model):
@@ -104,7 +105,7 @@ class Subscribe(models.Model):
         related_name='subscribe',
         verbose_name='Подписки на автора'
     )
-    recipe = models.ForeignKey(
+    recipes = models.ForeignKey(
         Recipe,
         on_delete=models.SET_NULL,
         null=True,
@@ -117,11 +118,11 @@ class Subscribe(models.Model):
         verbose_name_plural = 'Подписки'
 
     def __str__(self) -> str:
-        return f'{self.user} {self.recipe}'
+        return f'{self.user} {self.recipes}'
 
 
 class ShopingCart(models.Model):
-    recipe = models.ForeignKey(
+    recipes = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopingcart',
@@ -132,8 +133,8 @@ class ShopingCart(models.Model):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
 
-    def __str__(self) -> str:
-        return self.recipe
+    # def __str__(self) -> str:
+    #     return self.recipes
 
 
 class IngredientRecipe(models.Model):

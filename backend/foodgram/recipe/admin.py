@@ -4,11 +4,18 @@ from recipe.models import (Ingredient, Recipe, Tag, Favorite,
                            Subscribe, ShopingCart)
 
 
+class IngredientsField(admin.TabularInline):
+    model = Recipe.ingredients.through
+    extra = 1
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'get_ingredients',
-                    'text', 'tag', 'cooking_time',)
-    list_filter = ('name', 'author', 'tag',)
+    list_display = ('name', 'author', 'text', 'tags', 'cooking_time',
+                    'get_ingredient')
+    list_filter = ('name', 'author', 'tags',)
+    list_editable = ('text', 'tags')
+    inlines = [IngredientsField, ]
     list_max_show_all = 15
     empty_value_display = '-пусто-'
 
@@ -33,7 +40,7 @@ class TagsAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe',)
+    list_display = ('user', 'recipes',)
     list_editable = ('user',)
     list_display_links = None
     list_max_show_all = 15
@@ -42,7 +49,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 @admin.register(Subscribe)
 class SubscribeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe',)
+    list_display = ('user', 'recipes',)
     list_editable = ('user',)
     list_display_links = None
     list_max_show_all = 15
@@ -51,6 +58,6 @@ class SubscribeAdmin(admin.ModelAdmin):
 
 @admin.register(ShopingCart)
 class ShopingCartAdmin(admin.ModelAdmin):
-    list_display = ('recipe',)
+    list_display = ('recipes',)
     list_max_show_all = 15
     empty_value_display = '-пусто-'
