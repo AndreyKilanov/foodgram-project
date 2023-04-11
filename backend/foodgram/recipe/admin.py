@@ -49,7 +49,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 @admin.register(Subscribe)
 class SubscribeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipes',)
+    list_display = ('user', 'author',)
     list_editable = ('user',)
     list_display_links = None
     list_max_show_all = 15

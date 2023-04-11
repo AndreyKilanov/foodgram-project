@@ -17,6 +17,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         try:
+            logging.debug('Данные импортируются...')
+
             for row in DictReader(open('static/data/ingredients.csv',
                                        encoding='utf8')):
                 ingredients = Ingredient(
@@ -30,5 +32,5 @@ class Command(BaseCommand):
             logging.debug('Все данные импортированы!')
 
         except Exception as error:
-            logging.error(f'Произошла ошибка {error}. ' 
+            logging.error(f'Произошла ошибка {error}.\n' 
                           'Данные не импортированы!')

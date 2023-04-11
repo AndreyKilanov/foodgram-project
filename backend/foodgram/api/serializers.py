@@ -3,6 +3,7 @@ import re
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -67,16 +68,18 @@ class FavoriteSerializer(serializers.ModelSerializer):
         slug_field='favorite',
         read_only=True,
     )
-    resipes = ...
-    
+    resipes = RecipeReadSerializer
+
     class Meta:
         model = Favorite
         fields = ('user', 'recipes')
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Subscribe
+        fields = '__all__'
 
 
 class ShopingCartSerializer(serializers.ModelSerializer):
@@ -84,53 +87,82 @@ class ShopingCartSerializer(serializers.ModelSerializer):
         model = ShopingCart
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True,
+                                                      default=False)
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username',
-                  'email', 'role')
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed')
 
-    def validate_username(self, username):
-        regex = re.compile(r'^[\w.@+-]+$')
-        if not re.fullmatch(regex, username):
-            raise serializers.ValidationError('Проверьте username!')
-        return username
-
-
-class UserCreationSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True, max_length=254)
-    username = serializers.CharField(required=True, max_length=150)
-
-    def validate_username(self, username):
-        if username.lower() == 'me':
-            raise serializers.ValidationError(
-                {'Выберите другой username.'})
-        regex = re.compile(r'^[\w.@+-]+$')
-        if not re.fullmatch(regex, username):
-            raise serializers.ValidationError('Проверьте username!')
-        return username
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return obj.favorite.filter(user_id=user.id).exist()
 
 
-class UserAccessTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=True)
+class CustomUserCreateSerializer(UserCreateSerializer):
+    # email = serializers.EmailField(required=True)
 
-    def validate(self, data):
-        user = get_object_or_404(get_user_model(), username=data['username'])
-        if not default_token_generator.check_token(user,
-                                                   data['confirmation_code']):
-            raise serializers.ValidationError(
-                {'confirmation_code': 'Неверный код подтверждения'})
-        return data
+    # def validate_email(self, email):
+    #     regex = re.compile(r'^[\w.@+-]+$')
+    #     if not re.fullmatch(regex, email):
+    #         raise serializers.ValidationError('Проверьте email!')
+    #     return email
 
-    def validate_token(self, username):
-        user = get_object_or_404(User, username=username)
-        token = AccessToken.for_user(user)
-        if not default_token_generator.check_token(user, token):
-            raise serializers.ValidationError({"token": "Invalid token"})
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name')
 
-    def validate_username(self, username):
-        regex = re.compile(r'^[\w.@+-]+$')
-        if not re.fullmatch(regex, username):
-            raise serializers.ValidationError('Проверьте username!')
-        return username
+    # def validate_username(self, username):
+    #     if username.lower() == 'me':
+    #         raise serializers.ValidationError(
+    #             {'Выберите другой username.'})
+    #     regex = re.compile(r'^[\w.@+-]+$')
+    #     if not re.fullmatch(regex, username):
+    #         raise serializers.ValidationError('Проверьте username!')
+    #     return username
+
+
+# class UserAccessTokenSerializer(serializers.Serializer):
+#     email = serializers.EmailField(required=True)
+#     password = serializers.CharField(required=True)
+#     # username = serializers.CharField(required=True)
+#     # confirmation_code = serializers.CharField(required=True)
+#
+#     def validate(self, data):
+#         # user = get_object_or_404(User, username=data['username'])
+#         # if not default_token_generator.check_token(user,
+#         #                                            data['confirmation_code']):
+#         #     raise serializers.ValidationError(
+#         #         {'confirmation_code': 'Неверный код подтверждения'})
+#         email = get_object_or_404(User, email=data['email'])
+#         print(f'12341556 ::: {email}')
+#         password = get_object_or_404(User, password=data['password'])
+#         print(f'12121313  ::: {str(password)}')
+#         if not email or password:
+#             raise serializers.ValidationError(
+#                 {'email': 'не верный email или пароль'}
+#             )
+#         return data
+
+    # def validate_token(self, username):
+    #     user = get_object_or_404(User, username=username)
+    #     token = AccessToken.for_user(user)
+    #     if not default_token_generator.check_token(user, token):
+    #         raise serializers.ValidationError({"token": "Не верный токен"})
+    #
+    # def validate_username(self, username):
+    #     regex = re.compile(r'^[\w.@+-]+$')
+    #     if not re.fullmatch(regex, username):
+    #         raise serializers.ValidationError('Проверьте username!')
+    #     return username
+
+    # def validate_email(self, email):
+    #     regex = re.compile(r'^[\w.@+-]+$')
+    #     if not re.fullmatch(regex, email):
+    #         raise serializers.ValidationError('Проверьте email!')
+    #     return email

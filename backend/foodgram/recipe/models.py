@@ -93,8 +93,8 @@ class Favorite(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
-    # def __str__(self) -> str:
-    #     return self.user
+    def __str__(self) -> str:
+        return self.user
 
 
 class Subscribe(models.Model):
@@ -102,23 +102,24 @@ class Subscribe(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='subscribe',
+        related_name='follower',
         verbose_name='Подписки на автора'
     )
-    recipes = models.ForeignKey(
-        Recipe,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='subscribe',
-        verbose_name='Рецепты автора'
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        verbose_name='Автор'
     )
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = [models.UniqueConstraint(fields=['user', 'author'],
+                                               name='уникальные имена')]
 
     def __str__(self) -> str:
-        return f'{self.user} {self.recipes}'
+        return f'Автор: {self.author}, подписчик: {self.user} '
 
 
 class ShopingCart(models.Model):
@@ -133,8 +134,8 @@ class ShopingCart(models.Model):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
 
-    # def __str__(self) -> str:
-    #     return self.recipes
+    def __str__(self) -> str:
+        return self.recipes
 
 
 class IngredientRecipe(models.Model):
