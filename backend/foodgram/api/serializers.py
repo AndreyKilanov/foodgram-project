@@ -7,8 +7,8 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
-from recipe.models import (Ingredient, Recipe, Tag, Favorite,
-                           Subscribe, ShopingCart)
+from recipe.models import (Ingredient, Recipe, Tag, Favorite, ShoppingCart,
+                           Subscribe)
 
 User = get_user_model()
 
@@ -84,7 +84,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
 class ShopingCartSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ShopingCart
+        model = ShoppingCart
 
 
 class CustomUserSerializer(UserSerializer):

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from recipe.models import (Ingredient, Recipe, Tag, Favorite,
-                           Subscribe, ShopingCart)
+                           ShoppingCart, Subscribe)
 
 
 class IngredientsField(admin.TabularInline):
@@ -11,10 +11,10 @@ class IngredientsField(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'text', 'tags', 'cooking_time',
+    list_display = ('name', 'author', 'text', 'get_tag', 'cooking_time',
                     'get_ingredient')
-    list_filter = ('name', 'author', 'tags',)
-    list_editable = ('text', 'tags')
+    list_filter = ('name', 'author', )
+    list_editable = ('text', )
     inlines = [IngredientsField, ]
     list_max_show_all = 15
     empty_value_display = '-пусто-'
@@ -56,8 +56,8 @@ class SubscribeAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(ShopingCart)
-class ShopingCartAdmin(admin.ModelAdmin):
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('recipes',)
     list_max_show_all = 15
     empty_value_display = '-пусто-'

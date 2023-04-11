@@ -37,26 +37,25 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField(max_length=200, verbose_name='Название рецепта')
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='recipes',
-        verbose_name='Автор рецепта'
-    )
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='recipes',
+                               verbose_name='Автор рецепта')
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
-                                         related_name='recipes')
-    image = models.ImageField(verbose_name='Изображение')
+                                         related_name='recipes',
+                                         verbose_name='Ингредиенты')
+    image = models.FileField(upload_to='recipe_images/',
+                             verbose_name='Изображение')
     text = models.TextField(verbose_name='Описание рецепта')
-    tags = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='recipes',
-        verbose_name='Теги'
-    )
+    tags = models.ManyToManyField(Tag,
+                                  related_name='recipes',
+                                  verbose_name='Теги')
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления,  в минутах',
-        validators=[MinValueValidator(1)]
+        verbose_name='Время приготовления в минутах',
+        validators=[MinValueValidator(
+            limit_value=1,
+            message='Время приготовления не может быть меньше или равно 0')]
     )
     pub_date = models.DateTimeField(verbose_name='Дата публикации',
                                     auto_now_add=True)
@@ -69,25 +68,22 @@ class Recipe(models.Model):
     def get_ingredient(self):
         return "\n".join([f_name.name for f_name in self.ingredients.all()])
 
+    def get_tag(self):
+        return "\n".join([tag_name.name for tag_name in self.tags.all()])
+
     def __str__(self) -> str:
         return self.name
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='favorite',
-        verbose_name='Избранный автор'
-    )
-    recipes = models.ForeignKey(
-        Recipe,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='favorite',
-        verbose_name='Избранный рецепт'
-    )
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='favorite',
+                             verbose_name='Избранный автор')
+    recipes = models.ForeignKey(Recipe,
+                                on_delete=models.CASCADE,
+                                related_name='favorite',
+                                verbose_name='Избранный рецепт')
 
     class Meta:
         verbose_name = 'Избранное'
@@ -98,19 +94,14 @@ class Favorite(models.Model):
 
 
 class Subscribe(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='follower',
-        verbose_name='Подписки на автора'
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор'
-    )
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='follower',
+                             verbose_name='Подписчик')
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='following',
+                               verbose_name='Автор')
 
     class Meta:
         verbose_name = 'Подписка'
@@ -122,13 +113,15 @@ class Subscribe(models.Model):
         return f'Автор: {self.author}, подписчик: {self.user} '
 
 
-class ShopingCart(models.Model):
-    recipes = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='shopingcart',
-        verbose_name='Список покупок'
-    )
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='shoppingcart',
+                             verbose_name='Создатель списка покупок')
+    recipes = models.ForeignKey(Recipe,
+                                on_delete=models.CASCADE,
+                                related_name='shoppingcart',
+                                verbose_name='Список покупок')
 
     class Meta:
         verbose_name = 'Список покупок'
@@ -139,9 +132,24 @@ class ShopingCart(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    amount = models.IntegerField(verbose_name='Сумма')
+    ingredient = models.ForeignKey(Ingredient,
+                                   on_delete=models.CASCADE,
+                                   related_name='ingredient_recipe',
+                                   verbose_name='Ингредиент')
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE,
+                               related_name='ingredient_recipe',
+                               verbose_name='Рецепт')
+    amount = models.IntegerField(
+        verbose_name='Колличество',
+        validators=[MinValueValidator(
+            limit_value=1,
+            message='Колличество не может быть меньше или равно 0')]
+    )
+
+    class Meta:
+        verbose_name = 'Колличество ингредиента'
+        verbose_name_plural = 'Колличество ингредиентов'
 
     def __str__(self) -> str:
-        return f'{self.ingredient} {self.amount}'
+        return f'{self.ingredient}: {self.amount}'
