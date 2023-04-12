@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -13,25 +14,27 @@ from recipe.models import (Ingredient, Recipe, Tag, Favorite, ShoppingCart,
 User = get_user_model()
 
 
-class IngredientsSerializer(serializers.ModelSerializer):
+class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('name', 'measurement_unit')
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', 'color', 'slug')
+        fields = ('id', 'name', 'color', 'slug')
+        read_only_fields = ('name', 'color', 'slug')
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
+    tags = TagSerializer(many=True, read_only=True)
+    image = Base64ImageField()
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
     )
-    ingredients = IngredientsSerializer(many=True)
+    ingredients = IngredientSerializer(many=True)
     is_favorited = ...
     is_in_shopping_cart = ...
 
@@ -50,7 +53,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True,
     )
-    ingredients = IngredientsSerializer(many=True)
+    ingredients = IngredientSerializer(many=True)
     is_favorited = ...
     is_in_shopping_cart = ...
 
@@ -79,7 +82,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscribe
-        fields = '__all__'
+        fields = ('user', 'author')
 
 
 class ShopingCartSerializer(serializers.ModelSerializer):
@@ -88,8 +91,7 @@ class ShopingCartSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True,
-                                                      default=False)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -98,25 +100,26 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        if user.is_anonymous:
+
+        if user.is_anonymous or user == obj:
             return False
-        return obj.favorite.filter(user_id=user.id).exist()
+        return Subscribe.objects.filter(user=user.username,
+                                        author=obj.username).exist()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
-    # email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'password')
+        read_only_fields = ('id', )
 
     # def validate_email(self, email):
     #     regex = re.compile(r'^[\w.@+-]+$')
     #     if not re.fullmatch(regex, email):
     #         raise serializers.ValidationError('Проверьте email!')
     #     return email
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name')
-
     # def validate_username(self, username):
     #     if username.lower() == 'me':
     #         raise serializers.ValidationError(

@@ -13,10 +13,8 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         constraints = (
-            models.UniqueConstraint(
-                fields=('username', 'email'),
-                name='unique_follow'
-            ),
+            models.UniqueConstraint(fields=('username', 'email'),
+                                    name='unique_follow'),
         )
 
     def __str__(self):
