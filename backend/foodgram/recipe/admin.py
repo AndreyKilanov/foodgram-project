@@ -9,6 +9,11 @@ class IngredientsField(admin.TabularInline):
     extra = 1
 
 
+class TagsFields(admin.TabularInline):
+    model = Recipe.tags.through
+    extra = 1
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'text', 'get_tag', 'cooking_time',
@@ -30,8 +35,8 @@ class IngredientsAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color', 'slug',)
-    list_filter = ('name', 'color', 'slug',)
+    list_display = ('id', 'name', 'color', 'slug',)
+    list_filter = ('id', 'name', 'color', 'slug',)
     list_editable = ('name', 'color', 'slug',)
     list_display_links = None
     list_max_show_all = 15
