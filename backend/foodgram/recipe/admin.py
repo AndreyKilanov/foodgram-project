@@ -16,11 +16,11 @@ class TagsFields(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'text', 'get_tag', 'cooking_time',
-                    'get_ingredient')
+    list_display = ('id', 'name', 'author', 'text', 'get_tag',
+                    'cooking_time', 'get_ingredient')
     list_filter = ('name', 'author', )
     list_editable = ('text', )
-    inlines = [IngredientsField, ]
+    inlines = [TagsFields, IngredientsField]
     list_max_show_all = 15
     empty_value_display = '-пусто-'
 

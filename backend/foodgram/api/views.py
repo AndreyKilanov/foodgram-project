@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -13,22 +12,38 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, \
     IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
 from api.permissions import IsAdminPermission
 from api.serializers import (IngredientSerializer, RecipeReadSerializer,
-                             TagSerializer, FavoriteSerializer,
-                             ShopingCartSerializer, SubscribeSerializer,
+                             TagSerializer, SubscribeSerializer,
                              RecipeWriteSerializer, CustomUserSerializer,
-                             CustomUserCreateSerializer)
-from recipe.models import Recipe, Subscribe, Tag, Ingredient, Favorite
-
+                             CustomUserCreateSerializer,
+                             RecipeSubscribeSerializer)
+from recipe.models import Recipe, Subscribe, Tag, Ingredient, Favorite, \
+    ShoppingCart
 
 User = get_user_model()
 
 
 class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
-    queryset = User.objects.all()
+    # queryset = User.objects.all()
+
+
+class TagsViewSet(viewsets.GenericViewSet,
+                  ListModelMixin, RetrieveModelMixin):
+    permission_classes = [AllowAny]
+    serializer_class = TagSerializer
+    pagination_class = None
+    queryset = Tag.objects.all()
+
+
+class FavoriteViewSet(viewsets.GenericViewSet, ListModelMixin):
+    serializer_class = SubscribeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Favorite.objects.filter(user=user)
 
 
 class IngredientsViewSet(viewsets.GenericViewSet,
@@ -41,22 +56,6 @@ class IngredientsViewSet(viewsets.GenericViewSet,
     search_fields = (r'^name',)
 
 
-class TagsViewSet(viewsets.GenericViewSet,
-                  ListModelMixin, RetrieveModelMixin):
-    permission_classes = [AllowAny]
-    serializer_class = TagSerializer
-    queryset = Tag.objects.all()
-
-
-class FavoriteViewSet(viewsets.GenericViewSet, ListModelMixin):
-    serializer_class = FavoriteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Favorite.objects.filter(user=user)
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeReadSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -67,6 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeReadSerializer
+
         return RecipeWriteSerializer
 
     def perform_create(self, serializer):
@@ -86,4 +86,4 @@ class SubscribeViewSet(viewsets.ModelViewSet):
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
-    serializer_class = ShopingCartSerializer
+    model = ShoppingCart

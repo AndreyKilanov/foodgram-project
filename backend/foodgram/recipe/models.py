@@ -59,7 +59,7 @@ class Recipe(models.Model):
         verbose_name='Время приготовления в минутах',
         validators=[MinValueValidator(
             limit_value=1,
-            message='Время приготовления не может быть меньше или равно 0')]
+            message='Время приготовления не может быть меньше 1')]
     )
 
     class Meta:
@@ -146,7 +146,7 @@ class IngredientRecipe(models.Model):
         verbose_name='Колличество',
         validators=[MinValueValidator(
             limit_value=1,
-            message='Колличество не может быть меньше или равно 0')]
+            message='Колличество не может быть меньше 1')]
     )
 
     class Meta:

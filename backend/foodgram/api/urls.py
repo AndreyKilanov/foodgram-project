@@ -10,14 +10,17 @@ router_v1 = DefaultRouter()
 router_v1.register('recipes', RecipeViewSet, basename='recipes')
 router_v1.register('ingredients', IngredientsViewSet, basename='ingredients')
 router_v1.register('tags', TagsViewSet, basename='tags')
-router_v1.register('favorites', FavoriteViewSet, basename='favorites')
-router_v1.register('download_shopping_cart', ShoppingCartViewSet,
-                   basename='shoppingcarts')
-router_v1.register('subscribes', SubscribeViewSet, basename='subscribes')
+router_v1.register('users/subscriptions', FavoriteViewSet,
+                   basename='subscriptions')
+router_v1.register(r'users/(?P<id>\d+)/subscribe',
+                   SubscribeViewSet, basename='subscribe')
 router_v1.register('users', UsersViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router_v1.urls)),
-    # path('', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
+
+    re_path(r'recipes/(?P<recipe_id>\d+)/shopping_cart/',
+            ShoppingCartViewSet.as_view({'post': 'create', 'delete': 'delete'}
+                                        ), name='shopping_cart_create_delete'),
 ]
