@@ -17,5 +17,5 @@ class User(AbstractUser):
                                     name='unique_follow'),
         )
 
-    def __str__(self):
-        return f'{self.email}'
+    def __str__(self) -> str:
+        return f'email: {self.email} - username: {self.username}'
