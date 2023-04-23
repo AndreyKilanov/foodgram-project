@@ -4,18 +4,18 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from rest_framework import viewsets, status, permissions, filters
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly,
                                         IsAuthenticated)
 from rest_framework.response import Response
+from api.filters import RecipeFilter, IngredientFilter
 from api.permissions import IsAuthorOrAdminOrReadOnly
 from api.serializers import (IngredientSerializer, RecipeReadSerializer,
-                             TagSerializer, SubscribeSerializer,
-                             RecipeWriteSerializer, RecipeSubscribeSerializer,
-                             FollowOrShoppingCartSerializer, )
+                             RecipeWriteSerializer, SubscribeSerializer,
+                             TagSerializer, FollowOrShoppingCartSerializer, )
 from recipe.models import (Recipe, Subscribe, Tag, Ingredient, Favorite,
                            ShoppingCart, IngredientRecipe)
 
@@ -44,14 +44,14 @@ class SubscribeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FavoriteViewSet(viewsets.GenericViewSet, ListModelMixin):
-    serializer_class = FollowOrShoppingCartSerializer
+class SubscriptionsViewSet(viewsets.GenericViewSet, ListModelMixin):
+    serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
-        return Favorite.objects.filter(user=user).exists()
+        return Subscribe.objects.filter(user=user)
 
 
 class TagsViewSet(viewsets.GenericViewSet, ListModelMixin, RetrieveModelMixin):
@@ -66,8 +66,9 @@ class IngredientsViewSet(viewsets.GenericViewSet,
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     permission_classes = [AllowAny]
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, ]
-    # filterset_class = ...
+    filterset_class = IngredientFilter
     search_fields = (r'^name',)
 
 
@@ -77,8 +78,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     pagination_class = PageNumberPagination
-    # filter_backends = [DjangoFilterBackend, ]
-    # filterset_class = utils.RecipeFilter
+    filter_backends = [DjangoFilterBackend, ]
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
 

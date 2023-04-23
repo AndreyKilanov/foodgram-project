@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -133,14 +132,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, data):
         ingredients = self.initial_data.get('ingredients')
-        ingredients_new = [ingredient['id'] for ingredient in ingredients]
-        ingredients_in_recipe = [recipe['ingredient'].id for recipe in data]
-
-        if ingredients_new == ingredients_in_recipe:
+        ingredients_list = [ingredient['id'] for ingredient in ingredients]
+        if len(ingredients_list) != len(set(ingredients_list)):
             raise serializers.ValidationError(
-                'Нельзя выбрать один и тот же ингредиент два раза'
+                'Какой-то ингредиент был выбран более 1 раза'
             )
-
         return data
 
     def to_representation(self, instance):
@@ -181,25 +177,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         return instance
 
-    # def validate_ingredients(self, value):
-    #     ingredients_list = []
-    #     for item in value:
-    #         ingredient = get_object_or_404(Ingredient,
-    #                                        id=item['ingredient'].id)
-    #         if ingredient in ingredients_list:
-    #             raise serializers.ValidationError({
-    #                 'ingredients': 'Ингридиенты не могут повторяться!'
-    #             })
-    #     return value
-
-
-class RecipeSubscribeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('id', 'name', 'image', 'cooking_time')
-
 
 class SubscribeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='author.id', read_only=True)
@@ -223,24 +200,24 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context['request'].user.id
-        author = self.context['view'].kwargs['id']
+        author = int(self.context['view'].kwargs['id'])
 
         if user == author:
             username = self.context['request'].user.username
-            raise serializers.ValidationError({
-                f'{username}! На себя подписаться нельзя.'
-            })
+            raise serializers.ValidationError(
+                {'errors': f'{username}. На себя подписаться нельзя.'}
+            )
 
         if Subscribe.objects.filter(user=user, author=author).exists():
-            raise serializers.ValidationError({
-                f'Вы уже подписаны на этого пользователя'
-            })
+            raise serializers.ValidationError(
+                {'errors': 'Вы уже подписаны на этого пользователя.'}
+            )
 
         return attrs
 
     def get_recipes(self, obj):
         queryset = obj.author.recipes.all()
-        return RecipeSubscribeSerializer(queryset, many=True).data
+        return FollowOrShoppingCartSerializer(queryset, many=True).data
 
     def get_is_subscribed(self, obj):
         return Subscribe.objects.filter(author_id=obj.author_id,
