@@ -26,11 +26,22 @@ class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class TagsViewSet(viewsets.GenericViewSet, ListModelMixin, RetrieveModelMixin):
-    permission_classes = [AllowAny]
-    serializer_class = TagSerializer
-    pagination_class = None
-    queryset = Tag.objects.all()
+class SubscribeViewSet(viewsets.ModelViewSet):
+    http_method_names = ['post', 'delete']
+    serializer_class = SubscribeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        author = get_object_or_404(User, pk=self.kwargs.get('id'))
+        serializer.save(user=user, author=author)
+
+    def delete(self, request, *args, **kwargs):
+        user = self.request.user
+        author = get_object_or_404(User, pk=self.kwargs.get('id'))
+        follow = get_object_or_404(Subscribe, user=user, author=author)
+        follow.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FavoriteViewSet(viewsets.GenericViewSet, ListModelMixin):
@@ -41,6 +52,13 @@ class FavoriteViewSet(viewsets.GenericViewSet, ListModelMixin):
     def get_queryset(self):
         user = self.request.user
         return Favorite.objects.filter(user=user).exists()
+
+
+class TagsViewSet(viewsets.GenericViewSet, ListModelMixin, RetrieveModelMixin):
+    permission_classes = [AllowAny]
+    serializer_class = TagSerializer
+    pagination_class = None
+    queryset = Tag.objects.all()
 
 
 class IngredientsViewSet(viewsets.GenericViewSet,
@@ -129,12 +147,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=('GET', ),
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        if not request.user.cart.exists():
+        if not request.user.shoppingcart.exists():
             return Response('В списке покупок нет рецептов',
                             status=status.HTTP_400_BAD_REQUEST)
         ingredients = (
             IngredientRecipe.objects
-            .filter(recipe__cart__user=request.user)
+            .filter(recipe__shoppingcart__user=request.user)
             .values('ingredient')
             .annotate(total_amount=Sum('amount'))
             .values_list('ingredient__name', 'total_amount',
@@ -149,9 +167,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename=shopping_cart.txt'
         )
         return file
-
-
-class SubscribeViewSet(viewsets.ModelViewSet):
-    serializer_class = SubscribeSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Subscribe.objects.all()
