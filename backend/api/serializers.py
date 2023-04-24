@@ -190,7 +190,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.IntegerField(
-        source='author.recipes.count', read_only=True
+        source='author.recipe.count', read_only=True
     )
 
     class Meta:

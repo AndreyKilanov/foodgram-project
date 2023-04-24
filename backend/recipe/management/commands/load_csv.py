@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
             logging.debug('Данные из ingredients.csv импортированы.')
 
-            logging.debug('Все данные импортированы!')
+            logging.debug('Все данные успешно импортированы!')
 
         except Exception as error:
             logging.error(f'Произошла ошибка {error}.\n' 

@@ -1,4 +1,4 @@
-from django.urls import include, re_path
+from django.urls import include, re_path, path
 from rest_framework.routers import DefaultRouter
 
 from api.views import (IngredientsViewSet, RecipeViewSet, TagsViewSet,
@@ -20,5 +20,7 @@ router_v1.register(
 router_v1.register('users', UsersViewSet, basename='users')
 
 
-urlpatterns = [re_path(r'^auth/', include('djoser.urls.authtoken')), ]
-urlpatterns += router_v1.urls
+urlpatterns = [
+    path('', include(router_v1.urls)),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
+]

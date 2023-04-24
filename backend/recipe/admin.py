@@ -27,7 +27,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientsAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit',)
+    list_display = ('id', 'name', 'measurement_unit',)
     list_filter = ('name', 'measurement_unit',)
     list_max_show_all = 15
     empty_value_display = '-пусто-'
@@ -45,7 +45,7 @@ class TagsAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipes',)
+    list_display = ('user', 'recipe',)
     list_editable = ('user',)
     list_display_links = None
     list_max_show_all = 15
@@ -63,6 +63,6 @@ class SubscribeAdmin(admin.ModelAdmin):
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('recipes',)
+    list_display = ('user', 'recipe',)
     list_max_show_all = 15
     empty_value_display = '-пусто-'
