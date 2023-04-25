@@ -1,12 +1,14 @@
 import io
 
+from reportlab.pdfgen import canvas
+
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from reportlab.pdfgen import canvas
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.mixins import (ListModelMixin, RetrieveModelMixin,
@@ -15,6 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly,
                                         IsAuthenticated)
 from rest_framework.response import Response
+
 from api.filters import RecipeFilter, IngredientFilter
 from api.permissions import IsAuthorOrAdminOrReadOnly
 from api.serializers import (IngredientSerializer, RecipeReadSerializer,
@@ -89,20 +92,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
 
         return RecipeWriteSerializer
-
-    def get_queryset(self):
-        is_favorited = int(self.request.query_params.get('is_favorited')) or 0
-
-        if is_favorited == 1:
-            return Recipe.objects.filter(favorite__user=self.request.user)
-
-        is_in_shopping_cart = int(self.request.query_params.get(
-            'is_in_shopping_cart')) or 0
-
-        if is_in_shopping_cart == 1:
-            return Recipe.objects.filter(shoppingcart__user=self.request.user)
-
-        return Recipe.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
