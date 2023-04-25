@@ -1,4 +1,4 @@
-backend/recipe_image/
+backend/recipe_images/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
