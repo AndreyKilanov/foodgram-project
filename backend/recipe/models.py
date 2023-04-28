@@ -100,8 +100,8 @@ class Favorite(models.Model):
             )
         ]
 
-    def __str__(self) -> int:
-        return self.user_id
+    def __str__(self) -> str:
+        return f'{self.user_id}'
 
 
 class Subscribe(models.Model):
@@ -120,8 +120,8 @@ class Subscribe(models.Model):
         constraints = [models.UniqueConstraint(fields=['user', 'author'],
                                                name='уникальные имена')]
 
-    def __str__(self) -> int:
-        return self.author_id
+    def __str__(self) -> str:
+        return f'{self.author_id}'
 
 
 class ShoppingCart(models.Model):
@@ -144,8 +144,8 @@ class ShoppingCart(models.Model):
             )
         ]
 
-    def __str__(self):
-        return self.recipe_id
+    def __str__(self) -> str:
+        return f'{self.recipe_id}'
 
 
 class IngredientRecipe(models.Model):
@@ -169,5 +169,5 @@ class IngredientRecipe(models.Model):
         verbose_name = 'Колличество ингредиента'
         verbose_name_plural = 'Колличество ингредиентов'
 
-    def __str__(self) -> int:
-        return self.recipe_id
+    def __str__(self) -> str:
+        return f'{self.recipe_id}'
