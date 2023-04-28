@@ -1,7 +1,3 @@
-import io
-
-from reportlab.pdfgen import canvas
-
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import FileResponse
@@ -84,7 +80,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
@@ -92,6 +88,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
 
         return RecipeWriteSerializer
+
+    def get_queryset(self):
+        is_favorited = self.request.query_params.get('is_favorited')
+        if is_favorited is not None and int(is_favorited) == 1:
+            return Recipe.objects.filter(favorite__user=self.request.user)
+
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart'
+        )
+        if is_in_shopping_cart is not None and int(is_in_shopping_cart) == 1:
+            return Recipe.objects.filter(shoppingcart__user=self.request.user)
+
+        return Recipe.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -162,14 +171,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                          'ingredient__measurement_unit')
         )
 
-        text = ''
+        shopping_cart = 'Список покупок: \n'
         for ingredient in ingredients:
-            text += '* {} - {} {}. \n'.format(*ingredient)
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer)
-        p.drawString(x=100, y=100, text=f'Список покупок: \n {text}')
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=False,
-                            filename='shopping_cart.pdf')
+            shopping_cart += '* {} - {} {}. \n'.format(*ingredient)
+        return FileResponse(shopping_cart, content_type='text/plain',
+                            as_attachment=True, status=status.HTTP_200_OK)

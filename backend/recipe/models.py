@@ -100,7 +100,7 @@ class Favorite(models.Model):
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> int:
         return self.user_id
 
 
@@ -120,7 +120,7 @@ class Subscribe(models.Model):
         constraints = [models.UniqueConstraint(fields=['user', 'author'],
                                                name='уникальные имена')]
 
-    def __str__(self):
+    def __str__(self) -> int:
         return self.author_id
 
 
@@ -169,5 +169,5 @@ class IngredientRecipe(models.Model):
         verbose_name = 'Колличество ингредиента'
         verbose_name_plural = 'Колличество ингредиентов'
 
-    def __str__(self):
+    def __str__(self) -> int:
         return self.recipe_id

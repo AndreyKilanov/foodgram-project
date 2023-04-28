@@ -1,13 +1,15 @@
 import os
 
+from dotenv import load_dotenv
 from pathlib import Path
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-DEBUG = os.getenv('DEBUG', default=False)
+DEBUG = bool(os.getenv('DEBUG', default='False').lower() in 'true')
 
 ALLOWED_HOSTS = ['*']
 
@@ -67,7 +69,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
@@ -119,9 +120,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/back-static/'
+MEDIA_URL = '/back-media/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'back-static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'back-media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

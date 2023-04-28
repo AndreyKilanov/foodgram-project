@@ -39,6 +39,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 
 class FollowOrShoppingCartSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -218,7 +219,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return attrs
 
     def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
         queryset = obj.author.recipes.all()
+        if limit:
+            queryset = queryset[:int(limit)]
         return FollowOrShoppingCartSerializer(queryset, many=True).data
 
     def get_is_subscribed(self, obj):
