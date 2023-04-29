@@ -127,8 +127,8 @@ http://84.252.143.127/api/auth/token/login/
 
 * ```JSON
     {
-      "password": "string",
-      "email": "string"
+        "password": "string",
+        "email": "string"
     }
   ```
 
@@ -136,7 +136,7 @@ http://84.252.143.127/api/auth/token/login/
 
 * ```JSON
     {
-      "auth_token": "string"
+        "auth_token": "string"
     }
   ```
 
