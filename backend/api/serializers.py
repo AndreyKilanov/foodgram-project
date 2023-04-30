@@ -1,9 +1,8 @@
-from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
-
-from rest_framework import serializers
+from drf_extra_fields.fields import Base64ImageField
 
 from recipe.models import (Ingredient, Recipe, Tag, Subscribe,
                            IngredientRecipe)
@@ -136,11 +135,22 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, data):
         ingredients = self.initial_data.get('ingredients')
         ingredients_list = [ingredient['id'] for ingredient in ingredients]
+
+        if not ingredients:
+            raise serializers.ValidationError('Поле не может быть пустым')
+
         if len(ingredients_list) != len(set(ingredients_list)):
             raise serializers.ValidationError(
                 'Какой-то ингредиент был выбран более 1 раза'
             )
+
         return data
+
+    def validate_tags(self, tags):
+        if not tags:
+            raise serializers.ValidationError('Поле не может быть пустым')
+
+        return tags
 
     def to_representation(self, instance):
         request = self.context.get('request')
