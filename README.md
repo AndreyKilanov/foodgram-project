@@ -22,11 +22,11 @@ Python, Django, Django Rest Framework, Docker, Gunicorn, NGINX, PostgreSQL, Yand
 >*Клонировать репозиторий и перейти в него в командной строке:*
 
 * ```bash
-    git@github.com:AndyFebruary74/foodgram-project-react.git
+    git@github.com:AndyFebruary74/foodgram-project.git
   ```
 
 * ```bash
-  cd foodgram-project-react/
+  cd foodgram-project/
   ```
 
 >*Запустить docker-compose и собрать образы:*
@@ -52,7 +52,7 @@ Python, Django, Django Rest Framework, Docker, Gunicorn, NGINX, PostgreSQL, Yand
 * >*Админка доступна по адресу <http://84.252.143.127/admin>*
 * >*Документация к API доступна по адресу <http://84.252.143.127/api/docs/redoc.html>*
 
->*Пример заполнения .env файла (должен находиться по адресу foodgram-project-react/infra/):*
+>*Пример заполнения .env файла (должен находиться по адресу foodgram-project/infra/):*
 
 ```python
     # Django Secret Key
